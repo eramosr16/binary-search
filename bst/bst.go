@@ -1,16 +1,27 @@
 package bst
 
 type IBinarySearch interface {
+	Load(tree []int64)
 	Insert(v int64) *Node
-	Delete(v int64) *Node
-	ToArray() []int64
+	Delete(v int64)
+	Traversal(t TraversalType) []int64
 	Root() *Node
-	findParent(v int64) *Node
+	findParent(v int64) (*Node, *Node)
+	min(n *Node) (*Node, *Node)
+	max(n *Node) (*Node, *Node)
 }
 
 type BinarySearch struct {
 	root *Node
 }
+
+type TraversalType string
+
+const (
+	PreOrder  TraversalType = "Pre Order"
+	InOrder   TraversalType = "In Order"
+	PostOrder TraversalType = "Post Order"
+)
 
 type Node struct {
 	Value int64
@@ -28,6 +39,16 @@ var _ IBinarySearch = (*BinarySearch)(nil)
 // Root implements IBinarySearch
 func (b *BinarySearch) Root() *Node {
 	return b.root
+}
+
+// Load implements IBinarySearch
+func (b *BinarySearch) Load(tree []int64) {
+	if len(tree) == 0 {
+		return
+	}
+	for _, n := range tree {
+		b.Insert(n)
+	}
 }
 
 // Insert implements IBinarySearch
@@ -57,32 +78,69 @@ func (b *BinarySearch) Insert(v int64) *Node {
 }
 
 // Delete implements IBinarySearch
-func (b *BinarySearch) Delete(v int64) *Node {
-	parent := b.findParent(v)
-	if parent == nil {
-		return nil
+func (b *BinarySearch) Delete(v int64) {
+	parent, n := b.findParent(v)
+
+	// nothing to delete
+	if n == nil {
+		return
 	}
-	
-	panic("unimplemented")
+
+	// n is a leaf
+	if n.Left == nil {
+		if parent.Left == n {
+			parent.Left = n.Right
+			return
+		}
+		if parent.Right == n {
+			parent.Right = n.Right
+			return
+		}
+	}
+	if n.Right == nil {
+		if parent.Left == n {
+			parent.Left = n.Left
+			return
+		}
+		if parent.Right == n {
+			parent.Right = n.Left
+			return
+		}
+
+	}
+
+	if n.Right != nil {
+		pm, m := b.min(n.Right)
+		n.Value = m.Value
+		pm.Left = nil
+		return
+	}
+
+	if n.Left != nil {
+		pm, m := b.max(n.Left)
+		n.Value = m.Value
+		pm.Right = nil
+		return
+	}
 }
 
-// find implements IBinarySearch
-func (b *BinarySearch) findParent(v int64) *Node {
+// findParent implements IBinarySearch returns (parent,node)
+func (b *BinarySearch) findParent(v int64) (*Node, *Node) {
 	if b.root == nil {
-		return nil
+		return nil, nil
 	}
 	if b.root.Value == v {
-		return nil
+		return nil, b.root
 	}
 	rf := b.root
 	var parent *Node
 	for rf != nil {
 		parent = rf
 		if rf.Left != nil && rf.Left.Value == v {
-			return rf
+			return rf, rf.Left
 		}
 		if rf.Right != nil && rf.Right.Value == v {
-			return rf
+			return rf, rf.Right
 		}
 		if rf.Value < v {
 			rf = rf.Left
@@ -90,10 +148,78 @@ func (b *BinarySearch) findParent(v int64) *Node {
 			rf = rf.Right
 		}
 	}
-	return parent
+	return parent, nil
 }
 
-// ToArray implements IBinarySearch
-func (*BinarySearch) ToArray() []int64 {
-	panic("unimplemented")
+// min implements IBinarySearch returns (parent, node)
+func (b *BinarySearch) min(n *Node) (*Node, *Node) {
+	if n == nil {
+		return nil, nil
+	}
+	rf := n
+	var parent *Node
+	for rf.Left != nil {
+		parent = rf
+		rf = rf.Left
+	}
+	return parent, rf
+}
+
+// max implements IBinarySearch returns (parent, node)
+func (b *BinarySearch) max(n *Node) (*Node, *Node) {
+	if n == nil {
+		return nil, nil
+	}
+	rf := n
+	var parent *Node
+	for rf.Right != nil {
+		parent = rf
+		rf = rf.Right
+	}
+	return parent, rf
+}
+
+// Traversal implements IBinarySearch
+func (b *BinarySearch) Traversal(t TraversalType) []int64 {
+	var out []int64
+	if t == InOrder {
+		inOrder(b.root, &out)
+		return out
+	}
+	if t == PreOrder {
+		preOrder(b.root, &out)
+		return out
+	}
+	if t == PostOrder {
+		postOrder(b.root, &out)
+		return out
+	}
+	return out
+}
+
+func inOrder(rt *Node, res *[]int64) {
+	if rt == nil {
+		return
+	}
+	inOrder(rt.Left, res)
+	*res = append(*res, rt.Value)
+	inOrder(rt.Right, res)
+}
+
+func preOrder(rt *Node, res *[]int64) {
+	if rt == nil {
+		return
+	}
+	*res = append(*res, rt.Value)
+	preOrder(rt.Left, res)
+	preOrder(rt.Right, res)
+}
+
+func postOrder(rt *Node, res *[]int64) {
+	if rt == nil {
+		return
+	}
+	postOrder(rt.Left, res)
+	postOrder(rt.Right, res)
+	*res = append(*res, rt.Value)
 }
