@@ -9,7 +9,7 @@ type IBinarySearch interface {
 	DeepestNodes() ([]int64, int)
 	Root() int64
 	findParent(v int64) (*Node, *Node)
-	// findDeep(n *Node, lvl int, maxLevel int, deepNode *Node)
+	findDeep(n *Node, lvl int, nodes *map[int][]int64)
 	min(n *Node) (*Node, *Node)
 	max(n *Node) (*Node, *Node)
 }
