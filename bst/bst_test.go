@@ -8,19 +8,20 @@ func TestInsertOne(t *testing.T) {
 	b := NewBinarySearch()
 	var v int64 = 10
 
-	rs := b.Insert(v)
+	b.Insert(v)
+	res := b.Traversal(InOrder)
+	expect := []int64{10}
 
 	if b.root == nil {
 		t.Fatalf("Root is nil after insert")
 	}
-	if b.root.Value != v {
-		t.Fatalf("Insert was not done on root on empty tree")
+	if len(res) != len(expect) {
+		t.Fatalf("Missing nodes on resulting tree")
 	}
-	if rs.Value != v {
-		t.Fatalf("Resulting node doesn't contain inserted value")
-	}
-	if rs != b.root {
-		t.Fatalf("Resulting node doesn't match root after insert")
+	for i := range res {
+		if res[i] != expect[i] {
+			t.Fatalf("Insert failed")
+		}
 	}
 }
 
@@ -29,14 +30,21 @@ func TestInsertOneLeft(t *testing.T) {
 	var v int64 = 10
 	var left int64 = 5
 	b.Insert(v)
+	b.Insert(left)
 
-	rs := b.Insert(left)
+	res := b.Traversal(InOrder)
+	expect := []int64{5, 10}
 
-	if rs.Value != left {
-		t.Fatalf("Resulting node doesn't contain inserted value")
+	if b.root == nil {
+		t.Fatalf("Root is nil after insert")
 	}
-	if rs != b.root.Left {
-		t.Fatalf("Resulting node is not on the left of the tree")
+	if len(res) != len(expect) {
+		t.Fatalf("Missing nodes on resulting tree")
+	}
+	for i := range res {
+		if res[i] != expect[i] {
+			t.Fatalf("Insert failed")
+		}
 	}
 }
 
@@ -45,14 +53,21 @@ func TestInsertOneRight(t *testing.T) {
 	var v int64 = 10
 	var right int64 = 15
 	b.Insert(v)
+	b.Insert(right)
 
-	rs := b.Insert(right)
+	res := b.Traversal(InOrder)
+	expect := []int64{10, 15}
 
-	if rs.Value != right {
-		t.Fatalf("Resulting node doesn't contain inserted value")
+	if b.root == nil {
+		t.Fatalf("Root is nil after insert")
 	}
-	if rs != b.root.Right {
-		t.Fatalf("Resulting node is not on the right of the tree")
+	if len(res) != len(expect) {
+		t.Fatalf("Missing nodes on resulting tree")
+	}
+	for i := range res {
+		if res[i] != expect[i] {
+			t.Fatalf("Insert failed")
+		}
 	}
 }
 
@@ -135,5 +150,42 @@ func TestPostOrderTraversal(t *testing.T) {
 		if res[i] != expect[i] {
 			t.Fatalf("In Order failed")
 		}
+	}
+}
+
+func TestFindDeepCase1(t *testing.T) {
+	b := NewBinarySearch()
+	b.Load([]int64{12, 11, 90, 82, 7, 9})
+	ns, d := b.DeepestNodes()
+	if ns == nil {
+		t.Fatalf("Node should not be nil")
+	}
+	if len(ns) != 1 {
+		t.Fatalf("Expected 1 result got %v", len(ns))
+	}
+	if ns[0] != 9 {
+		t.Fatalf("Expected 9 got %v", ns[0])
+	}
+	if d != 3 {
+		t.Fatalf("Depth should be 3")
+	}
+}
+
+func TestFindDeepCase2(t *testing.T) {
+	b := NewBinarySearch()
+	b.Load([]int64{26, 82, 16, 92, 33})
+	ns, d := b.DeepestNodes()
+
+	if len(ns) != 2 {
+		t.Fatalf("Expected 2 result got %v", len(ns))
+	}
+	if ns[0] != 33 {
+		t.Fatalf("Expected 33 got %v", ns[0])
+	}
+	if ns[1] != 92 {
+		t.Fatalf("Expected 92 got %v", ns[1])
+	}
+	if d != 2 {
+		t.Fatalf("Depth should be 2")
 	}
 }

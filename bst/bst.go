@@ -2,11 +2,13 @@ package bst
 
 type IBinarySearch interface {
 	Load(tree []int64)
-	Insert(v int64) *Node
+	Insert(v int64)
 	Delete(v int64)
 	Traversal(t TraversalType) []int64
-	Root() *Node
+	DeepestNodes() ([]int64, int)
+	Root() int64
 	findParent(v int64) (*Node, *Node)
+	// findDeep(n *Node, lvl int, maxLevel int, deepNode *Node)
 	min(n *Node) (*Node, *Node)
 	max(n *Node) (*Node, *Node)
 }
@@ -37,8 +39,24 @@ func NewBinarySearch() *BinarySearch {
 var _ IBinarySearch = (*BinarySearch)(nil)
 
 // Root implements IBinarySearch
-func (b *BinarySearch) Root() *Node {
-	return b.root
+func (b *BinarySearch) Root() int64 {
+	if b.root != nil {
+		return b.root.Value
+	}
+	return 0
+}
+
+// DeepestNode implements IBinarySearch
+func (b *BinarySearch) DeepestNodes() ([]int64, int) {
+	deepNodes := make(map[int][]int64)
+	max := 0
+	b.findDeep(b.root, 0, &deepNodes)
+	for k := range deepNodes {
+		if k > max {
+			max = k
+		}
+	}
+	return deepNodes[max], max
 }
 
 // Load implements IBinarySearch
@@ -52,12 +70,12 @@ func (b *BinarySearch) Load(tree []int64) {
 }
 
 // Insert implements IBinarySearch
-func (b *BinarySearch) Insert(v int64) *Node {
+func (b *BinarySearch) Insert(v int64) {
 	if b.root == nil {
 		b.root = &Node{
 			Value: v,
 		}
-		return b.root
+		return
 	}
 	r := b.root
 	var ref *Node
@@ -71,10 +89,9 @@ func (b *BinarySearch) Insert(v int64) *Node {
 	}
 	if v < ref.Value {
 		ref.Left = &Node{Value: v}
-		return ref.Left
+		return
 	}
 	ref.Right = &Node{Value: v}
-	return ref.Right
 }
 
 // Delete implements IBinarySearch
@@ -142,7 +159,7 @@ func (b *BinarySearch) findParent(v int64) (*Node, *Node) {
 		if rf.Right != nil && rf.Right.Value == v {
 			return rf, rf.Right
 		}
-		if rf.Value < v {
+		if v < rf.Value {
 			rf = rf.Left
 		} else {
 			rf = rf.Right
@@ -177,6 +194,23 @@ func (b *BinarySearch) max(n *Node) (*Node, *Node) {
 		rf = rf.Right
 	}
 	return parent, rf
+}
+
+// findDeep implements IBinarySearch
+func (b *BinarySearch) findDeep(n *Node, lvl int, nodes *map[int][]int64) {
+	if n == nil {
+		return
+	}
+
+	(*nodes)[lvl] = append((*nodes)[lvl], n.Value)
+
+	if n.Left != nil {
+		b.findDeep(n.Left, lvl+1, nodes)
+	}
+
+	if n.Right != nil {
+		b.findDeep(n.Right, lvl+1, nodes)
+	}
 }
 
 // Traversal implements IBinarySearch
