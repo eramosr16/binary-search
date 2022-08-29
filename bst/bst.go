@@ -2,6 +2,7 @@ package bst
 
 type IBinarySearch interface {
 	Load(tree []int64)
+	Clear()
 	Insert(v int64)
 	Delete(v int64)
 	Traversal(t TraversalType) []int64
@@ -44,6 +45,11 @@ func (b *BinarySearch) Root() int64 {
 		return b.root.Value
 	}
 	return 0
+}
+
+// Clear implements IBinarySearch
+func (b *BinarySearch) Clear() {
+	b.root = nil
 }
 
 // DeepestNode implements IBinarySearch
