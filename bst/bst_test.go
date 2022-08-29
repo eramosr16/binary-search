@@ -1,6 +1,8 @@
 package bst
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestInsertOne(t *testing.T) {
 	b := NewBinarySearch()
@@ -51,6 +53,40 @@ func TestInsertOneRight(t *testing.T) {
 	}
 	if rs != b.root.Right {
 		t.Fatalf("Resulting node is not on the right of the tree")
+	}
+}
+
+func TestDeleteLeaf(t *testing.T) {
+	b := NewBinarySearch()
+	b.Load([]int64{50, 30, 20, 40, 70, 60, 80})
+
+	b.Delete(20)
+	res := b.Traversal(InOrder)
+	expect := []int64{30, 40, 50, 60, 70, 80}
+	if len(res) != len(expect) {
+		t.Fatalf("Element not deleted")
+	}
+	for i := range res {
+		if res[i] != expect[i] {
+			t.Fatalf("Delete action failed")
+		}
+	}
+}
+
+func TestDeleteFullNode(t *testing.T) {
+	b := NewBinarySearch()
+	b.Load([]int64{50, 30, 20, 40, 70, 60, 80})
+
+	b.Delete(50)
+	res := b.Traversal(InOrder)
+	expect := []int64{20, 30, 40, 60, 70, 80}
+	if len(res) != len(expect) {
+		t.Fatalf("Element not deleted")
+	}
+	for i := range res {
+		if res[i] != expect[i] {
+			t.Fatalf("Delete action failed")
+		}
 	}
 }
 
